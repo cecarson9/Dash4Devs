@@ -1,9 +1,22 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const colorVariants = {
+  High: "bg-custom-High",
+  Medium: "bg-custom-Medium",
+  Low: "bg-custom-Low"
+}
+
 const Task = (props) => (
-  <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+  <tr className={`border-b transition-colors ${colorVariants[props.task.priority]}`}>
     <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
+      <input type="checkbox"
+        onChange={e => {props.task.checked=!props.task.checked;
+          props.updateTask(e.target.checked, props.task.name, props.task.priority, props.task.description, props.task._id)}}
+        checked={props.task.checked}>
+      </input>
+    </td>
+    <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0" style={{'text-decoration-line':`${props.task.checked ? 'line-through' : 'none'}` }}>
       {props.task.name}
     </td>
     <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0">
@@ -40,7 +53,11 @@ export default function TaskList() {
 
   // This method fetches the records from the database.
   useEffect(() => {
-    async function getTasks() {
+    getTasks();
+    return;
+  }, [tasks.length]);
+
+  async function getTasks() {
       const response = await fetch(`http://localhost:5050/task/`);
       if (!response.ok) {
         const message = `An error occurred: ${response.statusText}`;
@@ -48,11 +65,12 @@ export default function TaskList() {
         return;
       }
       const tasks = await response.json();
-      setTasks(tasks);
+      const nonCompletedTasks = tasks.filter((el) => !el.checked);
+      const completedTasks = tasks.filter((el) => el.checked);
+      const sortedNonCompletedTasks = sortTasks(nonCompletedTasks);
+      const sortedCompletedTasks = sortTasks(completedTasks); 
+      setTasks([...sortedNonCompletedTasks, ...sortedCompletedTasks]);
     }
-    getTasks();
-    return;
-  }, [tasks.length]);
 
   // This method will delete a record
   async function deleteTask(id) {
@@ -63,6 +81,41 @@ export default function TaskList() {
     setTasks(newTasks);
   }
 
+  async function updateTask(check, taskName, taskPriority, taskDescription, id) {
+    let item = {
+      name: taskName,
+      priority: taskPriority,
+      description: taskDescription,
+      checked: check
+    }
+    try {
+      
+      let response;
+        // if we are updating a record we will PATCH to /record/:id.
+      response = await fetch(`http://localhost:5050/task/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(item),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      getTasks();
+    } catch (error) {
+      console.error('A problem occurred with your fetch operation: ', error);
+    } 
+  }
+
+  function sortTasks(tasks) {
+    const highTasks = tasks.filter(el => el.priority == "High");
+    const medTasks = tasks.filter(el => el.priority == "Medium");
+    const lowTasks = tasks.filter(el => el.priority == "Low")
+    return [...highTasks, ...medTasks, ...lowTasks];
+  }
+
   // This method will map out the records on the table
   function taskList() {
     return tasks.map((task) => {
@@ -70,6 +123,7 @@ export default function TaskList() {
         <Task
           task={task}
           deleteTask={() => deleteTask(task._id)}
+          updateTask={() => updateTask(task.checked, task.name, task.priority, task.description, task._id)}
           key={task._id}
         />
       );
@@ -85,6 +139,9 @@ export default function TaskList() {
           <table className="w-full caption-bottom text-sm">
             <thead className="[&_tr]:border-b">
               <tr className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted">
+              <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
+                  Status
+                </th>
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0">
                   Name
                 </th>

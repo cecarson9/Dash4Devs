@@ -6,6 +6,7 @@ export default function Task() {
     name: "",
     priority: "",
     description: "",
+    checked: false,
   });
   const [isNew, setIsNew] = useState(true);
   const params = useParams();

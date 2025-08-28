@@ -35,6 +35,7 @@ router.post("/", async (req, res) => {
       name: req.body.name,
       priority: req.body.priority,
       description: req.body.description,
+      checked: req.body.checked,
     };
     let collection = await db.collection("tasks");
     let result = await collection.insertOne(newDocument);
@@ -54,6 +55,7 @@ router.patch("/:id", async (req, res) => {
         name: req.body.name,
         priority: req.body.priority,
         description: req.body.description,
+        checked: req.body.checked,
       },
     };
 

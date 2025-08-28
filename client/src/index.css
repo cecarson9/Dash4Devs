@@ -1,2 +1,8 @@
+@import "tailwindcss";
 
+@theme {
+    --color-custom-High: #c91818;
+    --color-custom-Medium: #e3f114;
+    --color-custom-Low: #19C918;
+}
 
