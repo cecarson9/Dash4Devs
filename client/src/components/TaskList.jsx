@@ -112,7 +112,7 @@ export default function TaskList() {
   function sortTasks(tasks) {
     const highTasks = tasks.filter(el => el.priority == "High");
     const medTasks = tasks.filter(el => el.priority == "Medium");
-    const lowTasks = tasks.filter(el => el.priority == "Low")
+    const lowTasks = tasks.filter(el => el.priority == "Low");
     return [...highTasks, ...medTasks, ...lowTasks];
   }
 
